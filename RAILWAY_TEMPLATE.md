@@ -6,6 +6,8 @@ The published template. Reproduce it from this file if it ever has to be rebuilt
 |---|---|
 | Name | Open Archiver |
 | Code | `open-archiver` |
+| Template id | `bb249cdc-56f0-4a3c-8e53-0bc7e523e6d6` |
+| Deploy URL | https://railway.com/deploy/open-archiver |
 | Category | Other |
 | Image (public service) | `ghcr.io/youssefsiam38/openarchiver-railway:<version>` |
 | Icon | `assets/icon.png` |

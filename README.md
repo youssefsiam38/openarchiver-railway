@@ -8,7 +8,9 @@ is a **community-maintained Railway template** for
 Archiver project**.
 
 <!-- DEPLOY_BUTTON_START -->
-Deploy button is added once the template is published.
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/open-archiver)
+
+Template page: https://railway.com/deploy/open-archiver
 <!-- DEPLOY_BUTTON_END -->
 
 > **Read this before deploying.** A fresh Open Archiver shows a setup page that creates the first
@@ -35,7 +37,7 @@ Deploy button is added once the template is published.
 |---|---|
 | Open Archiver | 0.6.0 |
 | Caddy (the gate that holds the port shut until setup is done) | 2.10.2 |
-| Wrapper | see [releases](https://github.com/youssefsiam38/openarchiver-railway/releases) |
+| Wrapper | v1.0.0 — `ghcr.io/youssefsiam38/openarchiver-railway:1.0.0` ([releases](https://github.com/youssefsiam38/openarchiver-railway/releases)) |
 
 **This is the heaviest template in this family.** The application container alone sits at roughly
 650 MB of memory idle, before any mailbox is ingested, and there are four services. Budget
