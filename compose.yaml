@@ -1,0 +1,88 @@
+# Local test topology. Mirrors the Railway service graph:
+#   db     -> PostgreSQL           (own volume, private)
+#   cache  -> Valkey, Redis-compatible (own volume, private)
+#   search -> Meilisearch          (own volume, private)
+#   app    -> public frontend + API + workers (wrapper image, own volume for archived mail)
+name: openarchiver-railway-test
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: open_archive
+      POSTGRES_USER: archiver
+      POSTGRES_PASSWORD: local-test-only-postgres-password
+    volumes:
+      - pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U archiver -d open_archive']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  cache:
+    image: valkey/valkey:8-alpine
+    restart: unless-stopped
+    command: valkey-server --requirepass local-test-only-valkey-password
+    volumes:
+      - valkey:/data
+    healthcheck:
+      test: ['CMD-SHELL', 'valkey-cli -a local-test-only-valkey-password ping | grep -q PONG']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  search:
+    image: getmeili/meilisearch:v1.38
+    restart: unless-stopped
+    environment:
+      MEILI_MASTER_KEY: local-test-only-meili-master-key
+      MEILI_NO_ANALYTICS: 'true'
+    volumes:
+      - meili:/meili_data
+    healthcheck:
+      test: ['CMD-SHELL', 'curl --fail http://localhost:7700/health || exit 1']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  app:
+    # Built from this repository. CI and the Railway template use the published GHCR image instead.
+    build:
+      context: .
+      args:
+        WRAPPER_VERSION: ${WRAPPER_VERSION:-0.0.0-local}
+        VCS_REF: ${VCS_REF:-local}
+    image: ${OPENARCHIVER_RAILWAY_IMAGE:-openarchiver-railway:local}
+    restart: unless-stopped
+    depends_on:
+      db: { condition: service_healthy }
+      cache: { condition: service_healthy }
+      search: { condition: service_healthy }
+    environment:
+      PORT: '8080'
+      APP_URL: http://127.0.0.1:8080
+      DATABASE_URL: postgresql://archiver:local-test-only-postgres-password@db:5432/open_archive
+      REDIS_HOST: cache
+      REDIS_PORT: '6379'
+      REDIS_PASSWORD: local-test-only-valkey-password
+      REDIS_TLS_ENABLED: 'false'
+      MEILI_HOST: http://search:7700
+      MEILI_MASTER_KEY: local-test-only-meili-master-key
+      JWT_SECRET: local-test-only-jwt-secret-not-for-production
+      ENCRYPTION_KEY: 00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff
+      OPENARCHIVER_ADMIN_EMAIL: owner@example.invalid
+      OPENARCHIVER_ADMIN_PASSWORD: local-test-only-admin-password
+      INDEXING_WORKER_MAX_OLD_SPACE_MB: '512'
+      APP_READY_TIMEOUT: '600'
+    volumes:
+      - archive:/var/data/open-archiver
+    ports:
+      - '127.0.0.1:8080:8080'
+
+volumes:
+  pg:
+  valkey:
+  meili:
+  archive:
