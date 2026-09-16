@@ -69,6 +69,24 @@ for wf in .github/workflows/*.yml; do
   fi
 done
 
+section "log streams"
+# Railway colours a log line by the stream it arrived on: routine lines on stderr show as errors.
+if grep -q '^log()' scripts/entrypoint.sh && ! grep '^log()' scripts/entrypoint.sh | grep -q '>&2'; then
+  pass "routine logs go to stdout"
+else
+  fail "log() writes to stderr; Railway would show every start-up line as an error"
+fi
+if grep '^fail()' scripts/entrypoint.sh | grep -q '>&2'; then pass "failures go to stderr"; else fail "fail() does not write to stderr"; fi
+assert_not_contains "the admin bootstrap logs to stdout too" "console.error(\`[openarchiver-railway]" "$(cat scripts/bootstrap-admin.mjs)"
+
+section "the cache password is expanded by a shell"
+# Railway does not expand variables in a start command: `--requirepass ${REDIS_PASSWORD}` sets the
+# password to that literal string and every worker fails with WRONGPASS. The compose file runs the
+# same shape as the template so the local stack would catch it.
+cache_cmd=$(docker compose -f compose.yaml config --format json | jq -r '.services.cache.command | join(" ")')
+assert_contains "the local cache command goes through a shell" 'exec valkey-server --requirepass' "$cache_cmd"
+assert_contains "and the template records the same" 'sh -c .exec valkey-server --requirepass' "$(cat RAILWAY_TEMPLATE.md)"
+
 section "no tracked secrets"
 if git rev-parse --git-dir >/dev/null 2>&1; then
   if git grep -nIE '(BEGIN [A-Z ]*PRIVATE KEY|ghp_[A-Za-z0-9]{20,}|xox[baprs]-)' -- . >/dev/null 2>&1; then

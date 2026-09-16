@@ -54,7 +54,7 @@ Railway's managed PostgreSQL. No extra configuration.
 | Field | Value |
 |---|---|
 | Source | `valkey/valkey:8-alpine` |
-| Start command | `valkey-server --requirepass ${REDIS_PASSWORD}` |
+| Start command | `sh -c 'exec valkey-server --requirepass "$REDIS_PASSWORD" --bind :: 0.0.0.0'` |
 | Domain | none |
 | Volume | `/data` |
 
@@ -93,3 +93,8 @@ Railway's managed PostgreSQL. No extra configuration.
   attachments and have the memory to spare.
 - `ENCRYPTION_KEY` must be exactly 64 hex characters; the `secret(64, "abcdef0123456789")` generator
   produces that.
+- **Railway does not expand variables in a start command.** The first version of this template ran
+  `valkey-server --requirepass ${REDIS_PASSWORD}`, which set the password to that literal string:
+  Valkey came up healthy, and every ingestion and indexing job failed with `WRONGPASS`. The start
+  command goes through `sh -c` so that a shell expands it. `--bind :: 0.0.0.0` keeps the listener
+  dual-stack, which is Valkey's default but is no longer implied once the command is spelled out.

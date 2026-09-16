@@ -14,9 +14,10 @@ const password = process.env.OPENARCHIVER_ADMIN_PASSWORD ?? '';
 const firstName = process.env.OPENARCHIVER_ADMIN_FIRST_NAME || 'Archive';
 const lastName = process.env.OPENARCHIVER_ADMIN_LAST_NAME || 'Administrator';
 
-const log = (msg) => console.error(`[openarchiver-railway] ${msg}`);
+// stdout, not stderr: Railway shows anything on stderr as an error, and these are routine.
+const log = (msg) => console.log(`[openarchiver-railway] ${msg}`);
 const fail = (msg) => {
-  log(`FATAL: ${msg}`);
+  console.error(`[openarchiver-railway] FATAL: ${msg}`);
   process.exit(1);
 };
 

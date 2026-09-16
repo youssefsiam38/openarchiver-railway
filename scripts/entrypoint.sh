@@ -6,8 +6,10 @@
 #   3. supervise the app and the public listener; if either exits, the container exits
 set -u
 
-log()  { printf '[openarchiver-railway] %s\n' "$*" >&2; }
-fail() { log "FATAL: $*"; exit 1; }
+# Railway colours a log line by the stream it arrived on, so routine start-up messages go to stdout
+# and only failures go to stderr; otherwise the whole first boot is shown to the deployer in red.
+log()  { printf '[openarchiver-railway] %s\n' "$*"; }
+fail() { printf '[openarchiver-railway] FATAL: %s\n' "$*" >&2; exit 1; }
 
 : "${OPENARCHIVER_INTERNAL_PORT:=3000}"
 : "${PORT_BACKEND:=4000}"

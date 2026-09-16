@@ -24,7 +24,12 @@ services:
   cache:
     image: valkey/valkey:8-alpine
     restart: unless-stopped
-    command: valkey-server --requirepass local-test-only-valkey-password
+    environment:
+      REDIS_PASSWORD: local-test-only-valkey-password
+    # The same shape as the Railway start command. Railway does not expand variables in a start
+    # command itself, so it has to go through a shell: `--requirepass ${REDIS_PASSWORD}` alone sets
+    # the password to that literal string, and every worker then fails with WRONGPASS.
+    command: ["sh", "-c", "exec valkey-server --requirepass \"$$REDIS_PASSWORD\""]
     volumes:
       - valkey:/data
     healthcheck:
@@ -78,8 +83,10 @@ services:
       APP_READY_TIMEOUT: '600'
     volumes:
       - archive:/var/data/open-archiver
+    # A fixed host port collides with whatever else the machine runs; override with
+    # OPENARCHIVER_TEST_PORT (and BASE_URL) when 8080 is taken.
     ports:
-      - '127.0.0.1:8080:8080'
+      - '127.0.0.1:${OPENARCHIVER_TEST_PORT:-8080}:8080'
 
 volumes:
   pg:
