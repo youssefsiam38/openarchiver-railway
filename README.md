@@ -37,7 +37,7 @@ Template page: https://railway.com/deploy/open-archiver
 |---|---|
 | Open Archiver | 0.6.0 |
 | Caddy (the gate that holds the port shut until setup is done) | 2.10.2 |
-| Wrapper | v1.0.0 — `ghcr.io/youssefsiam38/openarchiver-railway:1.0.0` ([releases](https://github.com/youssefsiam38/openarchiver-railway/releases)) |
+| Wrapper | v1.0.1 — `ghcr.io/youssefsiam38/openarchiver-railway:1.0.1`, index digest `sha256:73642c7d255b14c2dcaa6469623f61ea15ec026af53ca198fa6bec1868fbe9a7` ([releases](https://github.com/youssefsiam38/openarchiver-railway/releases)) |
 
 **This is the heaviest template in this family.** The application container alone sits at roughly
 650 MB of memory idle, before any mailbox is ingested, and there are four services. Budget
